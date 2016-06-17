@@ -25,26 +25,26 @@ In this blog let us setup a quick repose service to rate limit the Glance API.
 
 I have a testing Openstack environment. (I used a Packstack intallation in this case)
 
-```
-[root@packstack repose(keystone_admin)]# openstack service list
-+----------------------------------+------------+--------------+
-| ID                               | Name       | Type         |
-+----------------------------------+------------+--------------+
-| 30aeedda17b34e35b27e23d9f9d44fd2 | swift      | object-store |
-| 4bc0bfc7483a4838a20c5e38a454f597 | cinder     | volume       |
-| 59e68fbe791f4372b14d296cda351c1a | neutron    | network      |
-| 5e7c5b873f304d37884afd65fb632b92 | swift_s3   | s3           |
-| 680d7bf86e9e442687afb7636117dbdf | novav3     | computev3    |
-| 921547e706ae4929a6df1e29eb3a20a1 | nova       | compute      |
-| aa39d2b920b9497883754a6ad8e548d9 | keystone   | identity     |
-| b50f55825fd54522863d3896427405ee | cinderv2   | volumev2     |
-| c553b014d9f244a3aa2bfe212a4e3ab5 | nova_ec2   | ec2          |
-| cc4cb5d61dc141849d7f69184b5eb797 | ceilometer | metering     |
-| dce6182659fe46659de7c50539b0c0c4 | glance     | image        |
-+----------------------------------+------------+--------------+
-```
+    :::
+    [root@packstack repose(keystone_admin)]# openstack service list
+    +----------------------------------+------------+--------------+
+    | ID                               | Name       | Type         |
+    +----------------------------------+------------+--------------+
+    | 30aeedda17b34e35b27e23d9f9d44fd2 | swift      | object-store |
+    | 4bc0bfc7483a4838a20c5e38a454f597 | cinder     | volume       |
+    | 59e68fbe791f4372b14d296cda351c1a | neutron    | network      |
+    | 5e7c5b873f304d37884afd65fb632b92 | swift_s3   | s3           |
+    | 680d7bf86e9e442687afb7636117dbdf | novav3     | computev3    |
+    | 921547e706ae4929a6df1e29eb3a20a1 | nova       | compute      |
+    | aa39d2b920b9497883754a6ad8e548d9 | keystone   | identity     |
+    | b50f55825fd54522863d3896427405ee | cinderv2   | volumev2     |
+    | c553b014d9f244a3aa2bfe212a4e3ab5 | nova_ec2   | ec2          |
+    | cc4cb5d61dc141849d7f69184b5eb797 | ceilometer | metering     |
+    | dce6182659fe46659de7c50539b0c0c4 | glance     | image        |
+    +----------------------------------+------------+--------------+
+
 Glance endpoint –
-```
+```js
 [root@packstack repose(keystone_admin)]# keystone endpoint-list | grep `keystone service-list  | grep glance | awk '{print $2}' `
 | f324d78eccee4deb9e78f4c15f60081f | RegionOne |            http://10.0.0.37:9292            |            http://10.0.0.37:9292            |         http://10.0.0.37:9292          | dce6182659fe46659de7c50539b0c0c4 |
 Create necessary files and folder

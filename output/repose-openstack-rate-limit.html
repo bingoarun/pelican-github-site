@@ -5,7 +5,7 @@
 
     <link rel="stylesheet" type="text/css" href="/theme/stylesheet/style.min.css">
 
-  <link rel="stylesheet" type="text/css" href="/theme/pygments/monokai.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/pygments/default.min.css">
   <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/font-awesome.min.css">
 
 
@@ -15,13 +15,15 @@
     <link rel="icon" href="images/favicon.jpg" type="image/x-icon">
 
   <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="index, follow" />
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#333333">
+    <meta name="theme-color" content="#111111">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#333333">
+    <meta name="msapplication-navbutton-color" content="#111111">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -35,7 +37,7 @@
 <meta property="og:locale" content="en_US"/>
 <meta property="og:url" content="/repose-openstack-rate-limit.html"/>
 <meta property="og:type" content="article"/>
-<meta property="article:published_time" content="2016-05-01 10:02:00+02:00"/>
+<meta property="article:published_time" content="2016-05-01 10:02:00+05:30"/>
 <meta property="article:modified_time" content=""/>
 <meta property="article:author" content="/author/arun-prasath.html">
 <meta property="article:section" content="Openstack"/>
@@ -53,7 +55,7 @@
         <img src="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460" alt="Arun prasath" title="Arun prasath">
       </a>
       <h1><a href="">Arun prasath</a></h1>
-<p>Cloud engineer</p>      <nav>
+<p>Cloud engineer in Wanclouds Inc @ Cisco</p>      <nav>
         <ul class="list">
           <li><a href="/pages/my-super-post.html#my-super-post">About me</a></li>
         </ul>
@@ -110,9 +112,9 @@
 
 
 <p>Glance endpoint –</p>
-<div class="highlight"><pre><span></span>[root@packstack repose(keystone_admin)]# keystone endpoint-list | grep `keystone service-list  | grep glance | awk &#39;{print $2}&#39; `
-| f324d78eccee4deb9e78f4c15f60081f | RegionOne |            http://10.0.0.37:9292            |            http://10.0.0.37:9292            |         http://10.0.0.37:9292          | dce6182659fe46659de7c50539b0c0c4 |
-Create necessary files and folder
+<div class="highlight"><pre><span></span><span class="p">[</span><span class="nx">root</span><span class="err">@</span><span class="nx">packstack</span> <span class="nx">repose</span><span class="p">(</span><span class="nx">keystone_admin</span><span class="p">)]</span><span class="err">#</span> <span class="nx">keystone</span> <span class="nx">endpoint</span><span class="o">-</span><span class="nx">list</span> <span class="o">|</span> <span class="nx">grep</span> <span class="sb">`keystone service-list  | grep glance | awk &#39;{print $2}&#39; `</span>
+<span class="o">|</span> <span class="nx">f324d78eccee4deb9e78f4c15f60081f</span> <span class="o">|</span> <span class="nx">RegionOne</span> <span class="o">|</span>            <span class="nx">http</span><span class="o">:</span><span class="c1">//10.0.0.37:9292            |            http://10.0.0.37:9292            |         http://10.0.0.37:9292          | dce6182659fe46659de7c50539b0c0c4 |</span>
+<span class="nx">Create</span> <span class="nx">necessary</span> <span class="nx">files</span> <span class="nx">and</span> <span class="nx">folder</span>
 </pre></div>
 
 
@@ -236,14 +238,7 @@ container.cfg.xml  log4j2.xml  rate-limiting.cfg.xml  response-messaging.cfg.xml
 <p>Refer – https://repose.atlassian.net/wiki/display/REPOSE/Keystone+v2+Filter</p>
 <p>Test if rate limit is working</p>
 <p>some quick script –</p>
-<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
-2
-3
-4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 <span class="nv">OUT_FILE</span><span class="o">=</span><span class="s2">&quot;repose-curl.out&quot;</span>
 rm -f <span class="nv">$OUT_FILE</span>
 touch <span class="nv">$OUT_FILE</span>
@@ -252,7 +247,7 @@ touch <span class="nv">$OUT_FILE</span>
   curl -g -i -X GET http://localhost:19292/v2/images -H <span class="s2">&quot;X-Auth-Token: 72b77be2949b476ca8cae5efb3c3b0b9&quot;</span> -H <span class="s2">&quot;x-pp-user: admin&quot;</span> &gt;&gt; <span class="nv">$OUT_FILE</span> 2&gt;<span class="p">&amp;</span>1
 <span class="k">done</span>
 </pre></div>
-</td></tr></table>
+
 
 <p>In the output file it is observed that only 5 request were succeeded and the rest for into error as shown below.</p>
 <div class="highlight"><pre><span></span># curl -g -i -X GET http://localhost:19292/v2/images -H &quot;X-Auth-Token: 72b77be2949b476ca8cae5efb3c3b0b9&quot; -H &quot;x-pp-user: admin&quot;
@@ -322,11 +317,21 @@ Server: Jetty(9.2.z-SNAPSHOT)
 
 <script type="application/ld+json">
 {
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Arun's blog ",
+  "url" : "",
+  "image": "https://avatars2.githubusercontent.com/u/5082801?v=3&s=460",
+  "description": ""
+}
+</script>
+<script type="application/ld+json">
+{
   "@context": "http://schema.org",
   "@type": "BlogPosting",
   "name": "Repose to rate limit Openstack APIs",
   "headline": "Repose to rate limit Openstack APIs",
-  "datePublished": "2016-05-01 10:02:00+02:00",
+  "datePublished": "2016-05-01 10:02:00+05:30",
   "dateModified": "",
   "author": {
     "@type": "Person",

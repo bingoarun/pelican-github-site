@@ -6,11 +6,11 @@ AUTHOR = u'Arun prasath'
 SITENAME = u'Arun\'s blog'
 SITEURL = ''
 SITETITLE="Arun prasath"
-SITESUBTITLE="Cloud engineer"
+SITESUBTITLE="Cloud engineer in Wanclouds Inc @ Cisco"
 SITELOGO="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460"
 PATH = 'content'
 
-TIMEZONE = 'Europe/Paris'
+TIMEZONE = 'Asia/Kolkata'
 
 DEFAULT_LANG = u'en'
 MAIN_MENU = True
@@ -21,12 +21,14 @@ TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
+MD_EXTENSIONS = ['fenced_code', 'codehilite(css_class=highlight, linenums=False)', 'extra']
+
 MENUITEMS = (('Archives', '/archives.html'),
              ('Categories', '/categories.html'),
              ('Tags', '/tags.html'),)
 
-BROWSER_COLOR = '#333333'
-PYGMENTS_STYLE = 'monokai'
+BROWSER_COLOR = '#111111'
+PYGMENTS_STYLE = 'default'
 # Blogroll
 #LINKS = (('Pelican', 'http://getpelican.com/'),
 #         ('Python.org', 'http://python.org/'),
