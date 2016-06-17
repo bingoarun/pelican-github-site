@@ -25,13 +25,16 @@ MENUITEMS = (('Archives', '/archives.html'),
              ('Categories', '/categories.html'),
              ('Tags', '/tags.html'),)
 
+BROWSER_COLOR = '#333333'
+PYGMENTS_STYLE = 'monokai'
 # Blogroll
-LINKS = (('Pelican', 'http://getpelican.com/'),
-         ('Python.org', 'http://python.org/'),
-         ('Jinja2', 'http://jinja.pocoo.org/'),
-         )
+#LINKS = (('Pelican', 'http://getpelican.com/'),
+#         ('Python.org', 'http://python.org/'),
+#         ('Jinja2', 'http://jinja.pocoo.org/'),
+#         )
 
-# Social widget
+DISQUS_SITENAME = 'bingoarunprasath'
+GOOGLE_ANALYTICS = 'UA-78404732-1'
 
 DEFAULT_PAGINATION = 10
 #PAGINATED_DIRECT_TEMPLATES = ('blog-index',)
@@ -41,6 +44,7 @@ THEME= 'Flex'
 SOCIAL = (('linkedin', 'http://www.linkedin.com/in/bingoarunprasath'),
           ('github', 'https://github.com/bingoarunprasath'),
           ('facebook','https://www.facebook.com/bingoarunprasath'),
+          ('envelope-o','test'),
           )
 STATIC_PATHS = ['images']
 #SITE_THUMBNAIL = 'https://dl.dropboxusercontent.com/u/299446/logo.png'
@@ -54,7 +58,7 @@ FAVICON = 'images/favicon.jpg'
 ROBOTS = 'index, follow'
 
 COPYRIGHT_YEAR = 2016
-CC_LICENSE = { 'name': 'bingoarunprasath', 'version':'1.0', 'slug': 'by-sa' }
+#CC_LICENSE = { 'name': 'bingoarunprasath', 'version':'1.0', 'slug': 'by-sa' }
 #ICON = 'https://dl.dropboxusercontent.com/u/299446/logo.png'
 #SHORTCUT_ICON = 'https://dl.dropboxusercontent.com/u/299446/logo.png'
 #HEADER_IMAGE = 'images/banner.png'

@@ -1,8 +1,8 @@
 Title: Repose to rate limit Openstack APIs
 Date: 2016-05-01 10:02
 Category: Openstack
-Tags: openstack, architecture, docker, repose
-Slug: my-super-post
+Tags: Openstack, Architecture, Docker, Repose
+Slug: repose-openstack-rate-limit
 Authors: Arun prasath
 Summary: A simple demonstration explaining the use of repose to rate limit Openstack APIs
 
