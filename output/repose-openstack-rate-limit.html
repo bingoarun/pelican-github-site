@@ -5,9 +5,10 @@
 
     <link rel="stylesheet" type="text/css" href="/theme/stylesheet/style.min.css">
 
-  <link rel="stylesheet" type="text/css" href="/theme/pygments/default.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/pygments/github.min.css">
   <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/font-awesome.min.css">
 
+    <link href="/static/custom.css" rel="stylesheet">
 
 
 
@@ -21,9 +22,9 @@
   <meta name="robots" content="index, follow" />
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#111111">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#111111">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -238,7 +239,14 @@ container.cfg.xml  log4j2.xml  rate-limiting.cfg.xml  response-messaging.cfg.xml
 <p>Refer – https://repose.atlassian.net/wiki/display/REPOSE/Keystone+v2+Filter</p>
 <p>Test if rate limit is working</p>
 <p>some quick script –</p>
-<div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 <span class="nv">OUT_FILE</span><span class="o">=</span><span class="s2">&quot;repose-curl.out&quot;</span>
 rm -f <span class="nv">$OUT_FILE</span>
 touch <span class="nv">$OUT_FILE</span>
@@ -247,7 +255,7 @@ touch <span class="nv">$OUT_FILE</span>
   curl -g -i -X GET http://localhost:19292/v2/images -H <span class="s2">&quot;X-Auth-Token: 72b77be2949b476ca8cae5efb3c3b0b9&quot;</span> -H <span class="s2">&quot;x-pp-user: admin&quot;</span> &gt;&gt; <span class="nv">$OUT_FILE</span> 2&gt;<span class="p">&amp;</span>1
 <span class="k">done</span>
 </pre></div>
-
+</td></tr></table>
 
 <p>In the output file it is observed that only 5 request were succeeded and the rest for into error as shown below.</p>
 <div class="highlight"><pre><span></span># curl -g -i -X GET http://localhost:19292/v2/images -H &quot;X-Auth-Token: 72b77be2949b476ca8cae5efb3c3b0b9&quot; -H &quot;x-pp-user: admin&quot;

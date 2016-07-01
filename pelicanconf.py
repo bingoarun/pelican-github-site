@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 AUTHOR = u'Arun prasath'
 SITENAME = u'Arun\'s blog'
 SITEURL = ''
+#SITEURL = 'http://bingoarunprasath.github.io'
 SITETITLE="Arun prasath"
 SITESUBTITLE="Cloud engineer in Wanclouds Inc @ Cisco"
 SITELOGO="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460"
@@ -14,21 +15,27 @@ TIMEZONE = 'Asia/Kolkata'
 
 DEFAULT_LANG = u'en'
 MAIN_MENU = True
-# Feed generation is usually not desired when developing
+# Feed generation is usually not desired when developin
 FEED_ALL_ATOM = None
 CATEGORY_FEED_ATOM = None
 TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
-MD_EXTENSIONS = ['fenced_code', 'codehilite(css_class=highlight, linenums=False)', 'extra']
+#MD_EXTENSIONS = ['fenced_code', 'codehilite(css_class=highlight, linenums=False)', 'extra']
 
 MENUITEMS = (('Archives', '/archives.html'),
              ('Categories', '/categories.html'),
              ('Tags', '/tags.html'),)
 
-BROWSER_COLOR = '#111111'
-PYGMENTS_STYLE = 'default'
+BROWSER_COLOR = '#333333'
+PYGMENTS_STYLE = 'github'
+
+EXTRA_PATH_METADATA = {
+    'extra/custom.css': {'path': 'static/custom.css'},
+}
+CUSTOM_CSS = 'static/custom.css'
+
 # Blogroll
 #LINKS = (('Pelican', 'http://getpelican.com/'),
 #         ('Python.org', 'http://python.org/'),
@@ -48,7 +55,7 @@ SOCIAL = (('linkedin', 'http://www.linkedin.com/in/bingoarunprasath'),
           ('facebook','https://www.facebook.com/bingoarunprasath'),
           ('envelope-o','test'),
           )
-STATIC_PATHS = ['images']
+STATIC_PATHS = ['images','static']
 #SITE_THUMBNAIL = 'https://dl.dropboxusercontent.com/u/299446/logo.png'
 #SITE_THUMBNAIL_TEXT = 'Cloud tech'
 #SITESUBTITLE = 'Cloud sub tech'

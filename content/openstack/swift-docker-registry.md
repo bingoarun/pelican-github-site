@@ -17,6 +17,35 @@ swift: A driver storing objects in Openstack Swift.
 oss: A driver storing objects in Aliyun OSS.
 gcs: A driver storing objects in a Google Cloud Storage bucket.
 
+    :::
+    test test
+    # cat config.yaml
+    version: 0.1
+    log:
+      fields:
+        service: registry
+    storage:
+      cache:
+        blobdescriptor: inmemory
+      swift: 
+        username: <username>    
+        password: <password> 
+        authurl: https://mycloud.openstack.com:5000/v2.0 
+        tenant: <tenantname> 
+        tenantid: <tenantID> 
+        insecureskipverify: true 
+        container: my_docker_registry 
+        rootdirectory: /swift/object/name/prefix 
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options: [nosniff]
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
+
 #Setting up swift as a storage backend
 Create a file config.yaml
 ```

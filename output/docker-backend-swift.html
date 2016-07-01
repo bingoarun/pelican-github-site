@@ -5,9 +5,10 @@
 
     <link rel="stylesheet" type="text/css" href="/theme/stylesheet/style.min.css">
 
-  <link rel="stylesheet" type="text/css" href="/theme/pygments/default.min.css">
+  <link rel="stylesheet" type="text/css" href="/theme/pygments/github.min.css">
   <link rel="stylesheet" type="text/css" href="/theme/font-awesome/css/font-awesome.min.css">
 
+    <link href="/static/custom.css" rel="stylesheet">
 
 
 
@@ -21,9 +22,9 @@
   <meta name="robots" content="index, follow" />
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#111111">
+    <meta name="theme-color" content="#333333">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#111111">
+    <meta name="msapplication-navbutton-color" content="#333333">
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -89,6 +90,36 @@ azure: A driver storing objects in Microsoft Azure Blob Storage.
 swift: A driver storing objects in Openstack Swift.
 oss: A driver storing objects in Aliyun OSS.
 gcs: A driver storing objects in a Google Cloud Storage bucket.</p>
+<div class="highlight"><pre><span></span>test test
+# cat config.yaml
+version: 0.1
+log:
+  fields:
+    service: registry
+storage:
+  cache:
+    blobdescriptor: inmemory
+  swift: 
+    username: &lt;username&gt;    
+    password: &lt;password&gt; 
+    authurl: https://mycloud.openstack.com:5000/v2.0 
+    tenant: &lt;tenantname&gt; 
+    tenantid: &lt;tenantID&gt; 
+    insecureskipverify: true 
+    container: my_docker_registry 
+    rootdirectory: /swift/object/name/prefix 
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
+</pre></div>
+
+
 <h1>Setting up swift as a storage backend</h1>
 <p>Create a file config.yaml</p>
 <div class="highlight"><pre><span></span># cat config.yaml
