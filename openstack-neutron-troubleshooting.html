@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+    <link href="http://bingoarunprasath.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="images/penguin.png" type="image/x-icon">
+    <link rel="icon" href="images/penguin.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="index, follow" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="author" content="Arun prasath" />
+<meta name="description" content="A bunch of troubleshooting notes for neutron troubleshooting" />
+<meta name="keywords" content="Openstack, Troubleshooting">
+<meta property="og:site_name" content="Arun's blog"/>
+<meta property="og:title" content="Openstack neutron troubleshooting notes"/>
+<meta property="og:description" content="A bunch of troubleshooting notes for neutron troubleshooting"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="http://bingoarunprasath.github.io/openstack-neutron-troubleshooting.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-08-25 06:30:00+05:30"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="http://bingoarunprasath.github.io/author/arun-prasath.html">
+<meta property="article:section" content="Openstack"/>
+<meta property="article:tag" content="Openstack"/>
+<meta property="article:tag" content="Troubleshooting"/>
+<meta property="og:image" content="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460">
+
+  <title>Arun's blog &ndash; Openstack neutron troubleshooting notes</title>
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="http://bingoarunprasath.github.io">
+        <img src="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460" alt="Arun prasath" title="Arun prasath">
+      </a>
+      <h1><a href="http://bingoarunprasath.github.io">Arun prasath</a></h1>
+
+<p>Cloud engineer in Wanclouds Inc @ Cisco</p>
+      <nav>
+        <ul class="list">
+          <li><a href="http://bingoarunprasath.github.io/pages/my-super-post.html#my-super-post">About me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-linkedin" href="http://www.linkedin.com/in/bingoarunprasath" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        <li><a class="sc-github" href="https://github.com/bingoarunprasath" target="_blank"><i class="fa fa-github"></i></a></li>
+        <li><a class="sc-facebook" href="https://www.facebook.com/bingoarunprasath" target="_blank"><i class="fa fa-facebook"></i></a></li>
+        <li><a class="sc-envelope-o" href="test" target="_blank"><i class="fa fa-envelope-o"></i></a></li>
+      </ul>
+    </div>
+  </aside>
+  <main>
+    <nav>
+      <a href="http://bingoarunprasath.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article>
+  <header>
+    <h1 id="openstack-neutron-troubleshooting">Openstack neutron troubleshooting notes</h1>
+    <p>
+          Posted on Thu 25 August 2016 in <a href="http://bingoarunprasath.github.io/category/openstack.html">Openstack</a>
+
+
+    </p>
+  </header>
+  <div>
+    <h3>Basic things to consider before starting the troubleshooting</h3>
+<p>1) Check if the network issue is for a single tenant or multiple tenant. If it is only for a single tenant, then most probably the user might be doing something wrong like messed up security group or badly configured network etc. </p>
+<p>2) Check if the network agents (L3 and DHCP) are working fine by giving the follwing command</p>
+<div class="highlight"><pre><span></span># neutron agents-list
+</pre></div>
+
+
+<p>3) Identify the log locations -</p>
+<p>Open vSwitch agent log - /var/log/neutron/openvswitch-agent.log - Available in compute node </p>
+<p>L3 agent log - /var/log/neutron/l3-agent.log - Available in network node where L3 agent is running, use command in previous step to check the node</p>
+<p>DHCP agent log - /var/log/neutron/dhcp-agent.log - Available in network node where DHCP agent is running, use command in previous step to check the node</p>
+<p>DNSMASQ logs - /var/log/messages - Available in the same node running DHCP agent</p>
+<h3>Not able to ping the private IP or floating IP of the instance</h3>
+<p>1) Check and ensure if the ICMP ingress rule is added in any one of the security group assigned to the instance.</p>
+<div class="highlight"><pre><span></span>$ openstack server show 262b20a1-3b98-4ca0-b7a1-3f04f31f60bb  <span class="p">|</span> grep security_groups
+<span class="p">|</span> security_groups                      <span class="p">|</span> <span class="o">[{</span>u<span class="s1">&#39;name&#39;</span>: u<span class="s1">&#39;default&#39;</span><span class="o">}]</span>                                  <span class="p">|</span>
+
+$ openstack security group rule list default <span class="p">|</span> grep icmp 
+<span class="p">|</span> e70fd066-bc29-4ab8-ba72-c4a10f3d343a <span class="p">|</span> icmp        <span class="p">|</span> 0.0.0.0/0 <span class="p">|</span>            <span class="p">|</span> None                                 <span class="p">|</span>
+</pre></div>
+
+
+<p>2) Check from instance console if an IP address is assigned to the instance. </p>
+<div class="highlight"><pre><span></span>$ openstack console log show 262b20a1-3b98-4ca0-b7a1-3f04f31f60bb
+
+...truncated
+<span class="o">[</span>   17.750197<span class="o">]</span> cloud-init<span class="o">[</span>791<span class="o">]</span>: Cloud-init v. 0.7.5 running <span class="s1">&#39;init&#39;</span> at Tue, <span class="m">16</span> Aug <span class="m">2016</span> 04:31:36 +0000. Up 17.57 seconds.
+<span class="o">[</span>   17.891523<span class="o">]</span> cloud-init<span class="o">[</span>791<span class="o">]</span>: ci-info: +++++++++++++++++++++++++Net device info++++++++++++++++++++++++++
+<span class="o">[</span>   17.894429<span class="o">]</span> cloud-init<span class="o">[</span>791<span class="o">]</span>: ci-info: +--------+------+--------------+-------------+-------------------+
+<span class="o">[</span>   17.899632<span class="o">]</span> cloud-init<span class="o">[</span>791<span class="o">]</span>: ci-info: <span class="p">|</span> Device <span class="p">|</span>  Up  <span class="p">|</span>   Address    <span class="p">|</span>     Mask    <span class="p">|</span>     Hw-Address    <span class="p">|</span>
+<span class="o">[</span>   17.904601<span class="o">]</span> cloud-init<span class="o">[</span>791<span class="o">]</span>: ci-info: +--------+------+--------------+-------------+-------------------+
+<span class="o">[</span>   17.910889<span class="o">]</span> cloud-init<span class="o">[</span>791<span class="o">]</span>: ci-info: <span class="p">|</span>  lo:   <span class="p">|</span> True <span class="p">|</span>  127.0.0.1   <span class="p">|</span>  255.0.0.0  <span class="p">|</span>         .         <span class="p">|</span>
+<span class="o">[</span>   17.917099<span class="o">]</span> cloud-init<span class="o">[</span>791<span class="o">]</span>: ci-info: <span class="p">|</span> eth0:  <span class="p">|</span> True <span class="p">|</span> 192.168.0.20 <span class="p">|</span> 255.255.0.0 <span class="p">|</span> fa:16:3e:3c:75:62 <span class="p">|</span>
+<span class="o">[</span>   17.923790<span class="o">]</span> cloud-init<span class="o">[</span>791<span class="o">]</span>: ci-info: +--------+------+--------------+-------------+-------------------+
+
+...
+</pre></div>
+
+
+<p>3) If IP address is not assigned to the instance, check if DHCP is enable for the subnet. </p>
+<p>Get the subnet of the instance</p>
+<div class="highlight"><pre><span></span>$ openstack server show 262b20a1-3b98-4ca0-b7a1-3f04f31f60bb <span class="p">|</span> grep addresses
+
+<span class="p">|</span> addresses                            <span class="p">|</span> private-net-01<span class="o">=</span>192.168.0.20, 10.203.50.245               <span class="p">|</span>
+
+$  openstack network show private-net-01 <span class="p">|</span> grep subnet
+
+<span class="p">|</span> subnets         <span class="p">|</span> 9b61a815-32a0-4f18-947e-08ab512682f9 <span class="p">|</span>
+
+$  openstack subnet show 9b61a815-32a0-4f18-947e-08ab512682f9 <span class="p">|</span> grep enable_dhcp
+
+<span class="p">|</span> enable_dhcp       <span class="p">|</span> True                                 <span class="p">|</span>
+
+The DHCP should be enabled <span class="k">for</span> the instance to get an IP, unless there are special setup to get an IP address.
+</pre></div>
+
+
+<p>2) Check if you are able to ping private IP of the instance from the DHCP or router namespace.<br />
+You will be able to ping the private IP of the instance from DHCP namespace, if DHCP is enabled and from router namespace. </p>
+<p>To check if you can ping the private IP address -</p>
+<h4>Checking from a DHCP namespace -</h4>
+<p>Find the network ID of the instance</p>
+<div class="highlight"><pre><span></span># nova interface-list 262b20a1-3b98-4ca0-b7a1-3f04f31f60bb
++------------+--------------------------------------+--------------------------------------+--------------+-------------------+
+| Port State | Port ID                              | Net ID                               | IP addresses | MAC Addr          |
++------------+--------------------------------------+--------------------------------------+--------------+-------------------+
+| ACTIVE     | fc866e3f-83c9-4d54-82c8-27cb047b0fdf | c9da594d-1eee-45a7-805a-0575f881d266 | 192.168.0.20 | fa:16:3e:3c:75:62 |
++------------+--------------------------------------+--------------------------------------+--------------+-------------------+
+</pre></div>
+
+
+<p>Find the location of the DHCP agents for the network-</p>
+<div class="highlight"><pre><span></span><span class="c1"># neutron dhcp-agent-list-hosting-net c9da594d-1eee-45a7-805a-0575f881d266</span>
+<span class="s s-Atom">+--------------------------------------+---------------------------------------------+----------------+-------+</span>
+<span class="p">|</span> <span class="s s-Atom">id</span>                                   <span class="p">|</span> <span class="s s-Atom">host</span>                                        <span class="p">|</span> <span class="s s-Atom">admin_state_up</span> <span class="p">|</span> <span class="s s-Atom">alive</span> <span class="p">|</span>
+<span class="s s-Atom">+--------------------------------------+---------------------------------------------+----------------+-------+</span>
+<span class="p">|</span> <span class="mi">399</span><span class="s s-Atom">a9cc7</span><span class="o">-</span><span class="s s-Atom">f8d1</span><span class="o">-</span><span class="mi">4335</span><span class="o">-</span><span class="s s-Atom">bf7e</span><span class="o">-</span><span class="mi">38524</span><span class="s s-Atom">a2459b0</span> <span class="p">|</span> <span class="s s-Atom">net</span><span class="o">-</span><span class="mf">005.</span><span class="s s-Atom">cloud</span><span class="p">.</span><span class="s s-Atom">com</span>                           <span class="p">|</span> <span class="nv">True</span>           <span class="p">|</span> <span class="p">:-)</span>   <span class="p">|</span>
+<span class="p">|</span> <span class="mi">89</span><span class="s s-Atom">d2ebae</span><span class="o">-</span><span class="mi">1</span><span class="s s-Atom">eaa</span><span class="o">-</span><span class="mi">454</span><span class="s s-Atom">f</span><span class="o">-</span><span class="s s-Atom">b7de</span><span class="o">-</span><span class="mi">5</span><span class="s s-Atom">ffc0ed62977</span> <span class="p">|</span> <span class="s s-Atom">net</span><span class="o">-</span><span class="mf">003.</span><span class="s s-Atom">cloud</span><span class="p">.</span><span class="s s-Atom">com</span>                           <span class="p">|</span> <span class="nv">True</span>           <span class="p">|</span> <span class="p">:-)</span>   <span class="p">|</span>
+<span class="s s-Atom">+--------------------------------------+---------------------------------------------+----------------+-------+</span>
+</pre></div>
+
+
+<p>SSH to any one the node and execute the following command
+(DHCP namespace is of format qdhcp-[NET-ID])</p>
+<div class="highlight"><pre><span></span># ssh net-005cloud.com
+[root@net-005 ~]# ip netns exec qdhcp-c9da594d-1eee-45a7-805a-0575f881d266 ping 192.168.0.20
+PING 192.168.0.20 (192.168.0.20) 56(84) bytes of data.
+64 bytes from 192.168.0.20: icmp_seq=1 ttl=64 time=3.19 ms
+64 bytes from 192.168.0.20: icmp_seq=2 ttl=64 time=0.292 ms
+</pre></div>
+
+
+<h4>Checking from a router namespace</h4>
+<p>Find the router the instance is connected to. In this case the router ID is a6a6d716-df28-4eeb-9777-1bef31973b82</p>
+<p>Find where the L3 agent for this router is hosted</p>
+<div class="highlight"><pre><span></span><span class="c1"># neutron l3-agent-list-hosting-router a6a6d716-df28-4eeb-9777-1bef31973b82</span>
+<span class="s s-Atom">+--------------------------------------+---------------------------------------------+----------------+-------+</span>
+<span class="p">|</span> <span class="s s-Atom">id</span>                                   <span class="p">|</span> <span class="s s-Atom">host</span>                                        <span class="p">|</span> <span class="s s-Atom">admin_state_up</span> <span class="p">|</span> <span class="s s-Atom">alive</span> <span class="p">|</span>
+<span class="s s-Atom">+--------------------------------------+---------------------------------------------+----------------+-------+</span>
+<span class="p">|</span> <span class="mi">7</span><span class="s s-Atom">b3bf313</span><span class="o">-</span><span class="mi">07</span><span class="s s-Atom">d6</span><span class="o">-</span><span class="mi">43</span><span class="s s-Atom">f3</span><span class="o">-</span><span class="s s-Atom">b23c</span><span class="o">-</span><span class="mi">015</span><span class="s s-Atom">fa07844a2</span> <span class="p">|</span> <span class="s s-Atom">net</span><span class="o">-</span><span class="mf">001.</span><span class="s s-Atom">cloud</span><span class="p">.</span><span class="s s-Atom">com</span>                           <span class="p">|</span> <span class="nv">True</span>           <span class="p">|</span> <span class="p">:-)</span>   <span class="p">|</span>
+<span class="s s-Atom">+--------------------------------------+---------------------------------------------+----------------+-------+</span>
+</pre></div>
+
+
+<p>SSH into the node and execute the following command
+(Router namespace is of format qrouter-[ROUTER_ID] )</p>
+<div class="highlight"><pre><span></span>net-001 ~]# ip netns exec qrouter-a6a6d716-df28-4eeb-9777-1bef31973b82 ping 192.168.0.20
+PING 192.168.0.20 (192.168.0.20) 56(84) bytes of data.
+64 bytes from 192.168.0.20: icmp_seq=1 ttl=64 time=1.04 ms
+64 bytes from 192.168.0.20: icmp_seq=2 ttl=64 time=0.208 ms
+</pre></div>
+
+
+<p>If you are not able to ping from any one of the namespace (DHCP or Router), check the corresponding logs. If it is some linux process level error, you will need to restart it, else a in-depth packet capture analysis is required. </p>
+<h2>[ Under construction ]</h2>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="http://bingoarunprasath.github.io/tag/openstack.html">Openstack</a>
+      <a href="http://bingoarunprasath.github.io/tag/troubleshooting.html">Troubleshooting</a>
+    </p>
+  </div>
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'bingoarunprasath';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; Arun prasath 2016</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-78404732-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Arun's blog ",
+  "url" : "http://bingoarunprasath.github.io",
+  "image": "https://avatars2.githubusercontent.com/u/5082801?v=3&s=460",
+  "description": ""
+}
+</script>
+</body>
+</html>

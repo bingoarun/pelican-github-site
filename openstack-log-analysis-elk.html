@@ -1,0 +1,611 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+    <link href="http://bingoarunprasath.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="images/penguin.png" type="image/x-icon">
+    <link rel="icon" href="images/penguin.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="index, follow" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="author" content="Arun prasath" />
+<meta name="description" content="Some quick notes on setting up ELK for Openstack log analysis" />
+<meta name="keywords" content="Openstack, Architecture, Log, Log-analysis">
+<meta property="og:site_name" content="Arun's blog"/>
+<meta property="og:title" content="Openstack log analysis using ELK"/>
+<meta property="og:description" content="Some quick notes on setting up ELK for Openstack log analysis"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="http://bingoarunprasath.github.io/openstack-log-analysis-elk.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-06-25 13:02:00+05:30"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="http://bingoarunprasath.github.io/author/arun-prasath.html">
+<meta property="article:section" content="Openstack"/>
+<meta property="article:tag" content="Openstack"/>
+<meta property="article:tag" content="Architecture"/>
+<meta property="article:tag" content="Log"/>
+<meta property="article:tag" content="Log-analysis"/>
+<meta property="og:image" content="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460">
+
+  <title>Arun's blog &ndash; Openstack log analysis using ELK</title>
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="http://bingoarunprasath.github.io">
+        <img src="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460" alt="Arun prasath" title="Arun prasath">
+      </a>
+      <h1><a href="http://bingoarunprasath.github.io">Arun prasath</a></h1>
+
+<p>Cloud engineer in Wanclouds Inc @ Cisco</p>
+      <nav>
+        <ul class="list">
+          <li><a href="http://bingoarunprasath.github.io/pages/my-super-post.html#my-super-post">About me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-linkedin" href="http://www.linkedin.com/in/bingoarunprasath" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        <li><a class="sc-github" href="https://github.com/bingoarunprasath" target="_blank"><i class="fa fa-github"></i></a></li>
+        <li><a class="sc-facebook" href="https://www.facebook.com/bingoarunprasath" target="_blank"><i class="fa fa-facebook"></i></a></li>
+        <li><a class="sc-envelope-o" href="test" target="_blank"><i class="fa fa-envelope-o"></i></a></li>
+      </ul>
+    </div>
+  </aside>
+  <main>
+    <nav>
+      <a href="http://bingoarunprasath.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article>
+  <header>
+    <h1 id="openstack-log-analysis-elk">Openstack log analysis using ELK</h1>
+    <p>
+          Posted on Sat 25 June 2016 in <a href="http://bingoarunprasath.github.io/category/openstack.html">Openstack</a>
+
+
+    </p>
+  </header>
+  <div>
+    <p>This write up explains the basics of ELK and how can we leverage it to analyze Openstack logs.</p>
+<h1>Short intro to ELK</h1>
+<p><img alt="alt text" src="images/elk/elk.png" title="ELK architecture diagram" /></p>
+<p>The above is a simple generic architecture of ELK. It has the following components. </p>
+<p>1)    Shipper – Shipper (Logstash forwarder) is a component which collects the logs and send it to the ELK server. Shipper runs on all the servers where we need to collect logs.</p>
+<p>2)    Logstash – Logstash collects the logs, parse it and index it. Logstash conf files usually comprises of input, output and filters. </p>
+<p>3)    Elasticsearch – Elasticsearch is the search engine of the logs. It is where the logs are actually stored and optimized for quick retrieval. </p>
+<p>4)    Kibana – It is a dashboard to visualize the elasticsearch data</p>
+<p>5)    Broker – Broker is another component which sits in between the logstash forwarder and the logstash indexer. Since logstash in ELK server might not be able to handle a bulk load of logs, all the logs from shipper can be sent to a broker (typically redis) and that it turn will send the logs to Logstash. </p>
+<p>The above is one simple architecture. But in general, we can use different tools and architecture. For example there are different tools for shipping logs like filebeat, logstash-forwarder (deprecated) and even logstash can be used as shipper. In that case where logstash is used as shipper, we can process the logs and parse it in the client side itself. This can take the load of the ELK server and allows you to drop less useful logs in the client side. </p>
+<h1>Logstash</h1>
+<p>As I said earlier logstash conf files which are present in /etc/logstash/conf.d can contain 3 parts – input, output, filter.</p>
+<h2>Input</h2>
+<p>Input plugin enables a specific source of events to be read by Logstash.</p>
+<p>Some examples of input</p>
+<ul>
+<li>Beats</li>
+<li>File</li>
+<li>Stdin</li>
+<li>Eventlog</li>
+</ul>
+<h2>Filter</h2>
+<p>A filter plugin performs intermediary processing on an event. Filters are often applied conditionally depending on the characteristics of the event. </p>
+<p>Some examples are</p>
+<ul>
+<li>Csv</li>
+<li>Date</li>
+<li>Grok</li>
+<li>Json</li>
+</ul>
+<h2>Output</h2>
+<p>An output plugin sends event data to a particular destination.</p>
+<p>Some examples are</p>
+<ul>
+<li>Csv</li>
+<li>redis</li>
+<li>elasticsearch</li>
+<li>File</li>
+<li>Jira, Nagios, pagerduty</li>
+<li>Stdout</li>
+</ul>
+<h2>Codec</h2>
+<p>A codec plugin changes the data representation of an event</p>
+<p>Some examples are</p>
+<ul>
+<li>Collectd      - Reads events from the collectd binary protocol using UDP</li>
+<li>Graphite      - Reads graphite formatted lines</li>
+<li>Json      -  Reads JSON formatted content, creating one event per element in a JSON array</li>
+<li>Plain     - Reads plaintext with no delimiting between events</li>
+<li>rubydebug  - Applies the Ruby Awesome Print library to Logstash events</li>
+</ul>
+<p>ELK installation – </p>
+<p>http://galaxy.ansible.com/bingoarunprasath/elk/
+https://www.elastic.co/downloads</p>
+<p>Example 1 –  logtstash.conf</p>
+<div class="highlight"><pre><span></span>input {
+    stdin {}
+}
+filter{
+}
+output{
+stdout { codec =&gt; rubydebug }
+}
+</pre></div>
+
+
+<p>The above example will just get any input in stdin and print it as a processed output. 
+You can run the logstash server using the following command
+bin/logstash -f logstash-filter.conf
+It will now wait for stdin. Now just past a line from any log file. </p>
+<div class="highlight"><pre><span></span><span class="p">{</span>
+        <span class="s2">&quot;message&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;127.0.0.1 - - </span><span class="cp">[</span><span class="mi">11</span><span class="p">/</span><span class="nx">Dec</span><span class="p">/</span><span class="nx">2013</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">45</span> <span class="o">-</span><span class="mi">0800</span><span class="cp">]</span><span class="s2"> \&quot;GET /xampp/status.php HTTP/1.1\&quot; 200 3891 \&quot;http://cadenza/xampp/navi.php\&quot; \&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0\&quot;&quot;</span><span class="o">,</span>
+     <span class="s2">&quot;@timestamp&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;2013-12-11T08:01:45.000Z&quot;</span><span class="o">,</span>
+       <span class="s2">&quot;@version&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;1&quot;</span><span class="o">,</span>
+           <span class="s2">&quot;host&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;cadenza&quot;</span><span class="o">,</span>
+       <span class="s2">&quot;clientip&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="o">,</span>
+          <span class="s2">&quot;ident&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;-&quot;</span><span class="o">,</span>
+           <span class="s2">&quot;auth&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;-&quot;</span><span class="o">,</span>
+      <span class="s2">&quot;timestamp&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;11/Dec/2013:00:01:45 -0800&quot;</span><span class="o">,</span>
+           <span class="s2">&quot;verb&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;GET&quot;</span><span class="o">,</span>
+        <span class="s2">&quot;request&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;/xampp/status.php&quot;</span><span class="o">,</span>
+    <span class="s2">&quot;httpversion&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;1.1&quot;</span><span class="o">,</span>
+       <span class="s2">&quot;response&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;200&quot;</span><span class="o">,</span>
+          <span class="s2">&quot;bytes&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;3891&quot;</span><span class="o">,</span>
+       <span class="s2">&quot;referrer&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;\&quot;http://cadenza/xampp/navi.php\&quot;&quot;</span><span class="o">,</span>
+          <span class="s2">&quot;agent&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;\&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0\&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Now we have our ELK and our shipper (logstash again) working.</p>
+<h1></h1>
+<p>To monitor the Openstack services, install logstash on all the Openstack servers and use the following filter. (You may need to customize it based on your needs)</p>
+<div class="highlight"><pre><span></span><span class="x"># Credits to : https://github.com/godaddy/openstack-logstash</span>
+<span class="x">input {</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/nova/nova-api-metadata.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;nova&#39;, &#39;oslofmt&#39;, &#39;novametaapi&#39;]</span>
+<span class="x">    type =&gt; &quot;nova&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/neutron/neutron-dhcp-agent.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;neutron&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;neutron&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/glance/api.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;glance&#39;, &#39;oslofmt&#39;, &#39;glanceapi&#39;]</span>
+<span class="x">    type =&gt; &quot;glance&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/glance/registry.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;glance&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;glance&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/glance/scrubber.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;glance&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;glance&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/nova/nova-api.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;nova&#39;, &#39;oslofmt&#39;, &#39;novaapi&#39;]</span>
+<span class="x">    type =&gt; &quot;nova&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/nova/nova-conductor.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;nova&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;nova&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/nova/nova-manage.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;nova&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;nova&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/nova/nova-scheduler.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;nova&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;nova&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/nova/nova-spicehtml5proxy.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;nova&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;nova&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/keystone/keystone-all.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;keystone&#39;, &#39;oslofmt&#39;, &#39;keystoneapi&#39;]</span>
+<span class="x">    type =&gt; &quot;keystone&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/keystone/keystone-manage.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;keystone&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;keystone&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/ceilometer/ceilometer-agent-central.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;ceilometer&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;ceilometer&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/ceilometer/ceilometer-alarm-notifier.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;ceilometer&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;ceilometer&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/ceilometer/ceilometer-api.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;ceilometer&#39;, &#39;oslofmt&#39;, &#39;ceilometerapi&#39;]</span>
+<span class="x">    type =&gt; &quot;ceilometer&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/ceilometer/ceilometer-alarm-evaluator.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;ceilometer&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;ceilometer&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/ceilometer/ceilometer-collector.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;ceilometer&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;ceilometer&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/heat/heat.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;heat&#39;, &#39;oslofmt&#39;, &#39;heatapi&#39;]</span>
+<span class="x">    type =&gt; &quot;heat&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/neutron/neutron-server.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;neutron&#39;, &#39;oslofmt&#39;, &#39;neutronapi&#39; ]</span>
+<span class="x">    type =&gt; &quot;neutron&quot;</span>
+<span class="x">  }</span>
+<span class="x">  #Not collecting RabbitMQ logs for the moment</span>
+<span class="x">  #file {</span>
+<span class="x">  #  path =&gt; [&#39;/var/log/rabbitmq/rabbit@</span><span class="cp">&lt;%=</span> <span class="vi">@hostname</span> <span class="cp">%&gt;</span><span class="x">.log&#39;]</span>
+<span class="x">  #  tags =&gt; [&#39;rabbitmq&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">  #  type =&gt; &quot;rabbitmq&quot;</span>
+<span class="x">  #}</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/httpd/access_log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;horizon&#39;]</span>
+<span class="x">    type =&gt; &quot;horizon&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/httpd/error_log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;horizon&#39;]</span>
+<span class="x">    type =&gt; &quot;horizon&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/httpd/horizon_access_log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;horizon&#39;]</span>
+<span class="x">    type =&gt; &quot;horizon&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/httpd/horizon_error_log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;horizon&#39;]</span>
+<span class="x">    type =&gt; &quot;horizon&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/nova/nova-compute.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;nova&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;nova&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/libvirt/libvirtd.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;libvirt&#39;]</span>
+<span class="x">    type =&gt; &quot;libvirt&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/ceilometer/ceilometer-agent-compute.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;ceilometer&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;ceilometer&quot;</span>
+<span class="x">  }</span>
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/neutron/neutron-dhcp-agent.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;neutron&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;neutron&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/neutron/neutron-openvswitch-agent.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;neutron&#39;, &#39;oslofmt&#39;]</span>
+<span class="x">    type =&gt; &quot;neutron&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/openvswitch/ovs-ctl.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;openvswitch&#39;]</span>
+<span class="x">    type =&gt; &quot;openvswitch&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/openvswitch/ovsdb-server.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;openvswitch&#39;]</span>
+<span class="x">    type =&gt; &quot;openvswitch&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/openvswitch/ovs-vswitchd.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;openvswitch&#39;]</span>
+<span class="x">    type =&gt; &quot;openvswitch&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/audit/audit.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;audit&#39;]</span>
+<span class="x">    type =&gt; &quot;audit&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/dmesg&#39;]</span>
+<span class="x">    tags =&gt; [&#39;dmesg&#39;, &#39;kernel&#39;]</span>
+<span class="x">    type =&gt; &quot;dmesg&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">#  file {</span>
+<span class="x">#    path =&gt; [&#39;/var/log/messages&#39;]</span>
+<span class="x">#    tags =&gt; [&#39;syslog&#39;]</span>
+<span class="x">#    type =&gt; &quot;syslog&quot;</span>
+<span class="x">#  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/secure&#39;]</span>
+<span class="x">    tags =&gt; [&#39;secure&#39;]</span>
+<span class="x">    type =&gt; &quot;secure&quot;</span>
+<span class="x">  }</span>
+
+<span class="x">  file {</span>
+<span class="x">    path =&gt; [&#39;/var/log/yum.log&#39;]</span>
+<span class="x">    tags =&gt; [&#39;yum&#39;]</span>
+<span class="x">    type =&gt; &quot;yum&quot;</span>
+<span class="x">  }</span>
+<span class="x">}</span>
+
+<span class="x">filter {</span>
+<span class="x">  if &quot;oslofmt&quot; in [tags] {</span>
+<span class="x">    multiline {</span>
+<span class="x">      negate =&gt; true</span>
+<span class="x">      pattern =&gt; &quot;^%{TIMESTAMP_ISO8601} &quot;</span>
+<span class="x">      what =&gt; &quot;previous&quot;</span>
+<span class="x">    }</span>
+<span class="x">    multiline {</span>
+<span class="x">      negate =&gt; false</span>
+<span class="x">      pattern =&gt; &quot;^%{TIMESTAMP_ISO8601}%{SPACE}%{NUMBER}?%{SPACE}?TRACE&quot;</span>
+<span class="x">      what =&gt; &quot;previous&quot;</span>
+<span class="x">    }</span>
+<span class="x">    grok {</span>
+<span class="x">      # Do multiline matching as the above mutliline filter may add newlines</span>
+<span class="x">      # to the log messages.</span>
+<span class="x">      # TODO move the LOGLEVELs into a proper grok pattern.</span>
+<span class="x">      match =&gt; { &quot;message&quot; =&gt; &quot;(?m)^%{TIMESTAMP_ISO8601:logdate}%{SPACE}%{NUMBER:pid}?%{SPACE}?(?&lt;loglevel&gt;AUDIT|CRITICAL|DEBUG|INFO|TRACE|WARNING|ERROR) \[?\b%{NOTSPACE:module}\b\]?%{SPACE}?%{GREEDYDATA:logmessage}?&quot; }</span>
+<span class="x">      add_field =&gt; { &quot;received_at&quot; =&gt; &quot;%{@timestamp}&quot; }</span>
+<span class="x">    }</span>
+<span class="x">    if [module] == &quot;iso8601.iso8601&quot; {</span>
+<span class="x">      drop {}</span>
+<span class="x">    }</span>
+
+<span class="x">    if &quot;keystoneapi&quot; in [tags] {</span>
+<span class="x">       mutate {</span>
+<span class="x">            gsub =&gt; [&#39;logmessage&#39;,&quot;\&quot;&quot;,&quot;&quot;]</span>
+<span class="x">       }</span>
+<span class="x">       grok {</span>
+<span class="x">          match =&gt; { &quot;logmessage&quot; =&gt; &quot;\[\-\] %{NOTSPACE:requesterip} \- \- \[%{NOTSPACE:req_date} %{NOTSPACE:req_time}\] %{NOTSPACE:method} %{NOTSPACE:url_path} %{NOTSPACE:http_ver} %{NUMBER:response} %{NUMBER:bytes} %{NUMBER:seconds}&quot; }</span>
+<span class="x">          add_field =&gt; [&quot;api&quot;, &quot;keystone&quot;]</span>
+<span class="x">          add_tag =&gt; [&quot;apimetrics&quot;]</span>
+<span class="x">       }</span>
+<span class="x">    } else if &quot;novaapi&quot; in [tags] {</span>
+<span class="x">       if [module] == &quot;nova.osapi_compute.wsgi.server&quot; {</span>
+<span class="x">         mutate {</span>
+<span class="x">              gsub =&gt; [&#39;logmessage&#39;,&quot;\&quot;&quot;,&quot;&quot;]</span>
+<span class="x">         }</span>
+<span class="x">         grok {</span>
+<span class="x">            match =&gt; { &quot;logmessage&quot; =&gt; &quot;\[req\-%{NOTSPACE:requestid} %{NOTSPACE:user_id} %{NOTSPACE:tenant}\] %{NOTSPACE:requesterip} %{NOTSPACE:method} %{NOTSPACE:url_path} %{NOTSPACE:http_ver} status\: %{NUMBER:response} len\: %{NUMBER:bytes} time\: %{NUMBER:seconds}&quot; }</span>
+<span class="x">            add_field =&gt; [&quot;api&quot;, &quot;nova&quot;]</span>
+<span class="x">            add_tag =&gt; [&quot;apimetrics&quot;]</span>
+<span class="x">         }</span>
+<span class="x">       }</span>
+<span class="x">    } else if &quot;neutronapi&quot; in [tags] {</span>
+<span class="x">       if [module] == &quot;neutron.wsgi&quot; {</span>
+<span class="x">         if &quot;accepted&quot; not in [logmessage] {</span>
+<span class="x">           mutate {</span>
+<span class="x">                gsub =&gt; [&#39;logmessage&#39;,&quot;\&quot;&quot;,&quot;&quot;]</span>
+<span class="x">           }</span>
+<span class="x">           grok {</span>
+<span class="x">              match =&gt; { &quot;logmessage&quot; =&gt; &quot;\[req\-%{NOTSPACE:requestid} None\] %{NOTSPACE:requesterip} \- \- \[%{NOTSPACE:req_date} %{NOTSPACE:req_time}\] %{NOTSPACE:method} %{NOTSPACE:url_path} %{NOTSPACE:http_ver} %{NUMBER:response} %{NUMBER:bytes} %{NUMBER:seconds}&quot; }</span>
+<span class="x">              add_field =&gt; [&quot;api&quot;, &quot;neutron&quot;]</span>
+<span class="x">              add_tag =&gt; [&quot;apimetrics&quot;]</span>
+<span class="x">           }</span>
+<span class="x">         }</span>
+<span class="x">       }</span>
+<span class="x">    } else if &quot;glanceapi&quot; in [tags] {</span>
+<span class="x">       if [module] == &quot;glance.wsgi.server&quot; {</span>
+<span class="x">         mutate {</span>
+<span class="x">              gsub =&gt; [&#39;logmessage&#39;,&quot;\&quot;&quot;,&quot;&quot;]</span>
+<span class="x">         }</span>
+<span class="x">         grok {</span>
+<span class="x">            match =&gt; { &quot;logmessage&quot; =&gt; &quot;\[%{NOTSPACE:requestid} %{NOTSPACE:user_id} %{NOTSPACE:tenant} \- \- \-\] %{NOTSPACE:requesterip} \- \- \[%{NOTSPACE:req_date} %{NOTSPACE:req_time}\] %{NOTSPACE:method} %{NOTSPACE:url_path} %{NOTSPACE:http_ver} %{NUMBER:response} %{NUMBER:bytes} %{NUMBER:seconds}&quot; }</span>
+<span class="x">            add_field =&gt; [&quot;api&quot;, &quot;glance&quot;]</span>
+<span class="x">            add_tag =&gt; [&quot;apimetrics&quot;]</span>
+<span class="x">         }</span>
+<span class="x">       }</span>
+<span class="x">    } else if &quot;novametaapi&quot; in [tags] {</span>
+<span class="x">       mutate {</span>
+<span class="x">            gsub =&gt; [&#39;logmessage&#39;,&quot;\&quot;&quot;,&quot;&quot;]</span>
+<span class="x">       }</span>
+<span class="x">       if [module] == &quot;nova.api.ec2&quot; {</span>
+<span class="x">         grok {</span>
+<span class="x">            match =&gt; { &quot;logmessage&quot; =&gt; &quot;\[%{GREEDYDATA:requestid}\] %{NUMBER:seconds}s %{NOTSPACE:requesterip} %{NOTSPACE:method} %{NOTSPACE:url_path} None\:None %{NUMBER:response} %{GREEDYDATA:user_agent}&quot; }</span>
+<span class="x">            add_field =&gt; [&quot;api&quot;, &quot;metadata-ec2&quot;]</span>
+<span class="x">            add_tag =&gt; [&quot;apimetrics&quot;]</span>
+<span class="x">         }</span>
+<span class="x">       } else if [module] == &quot;nova.metadata.wsgi.server&quot; {</span>
+<span class="x">         grok {</span>
+<span class="x">            match =&gt; { &quot;logmessage&quot; =&gt; &quot;\[%{GREEDYDATA:requestid}\] %{NOTSPACE:requesterip} %{NOTSPACE:method} %{NOTSPACE:url_path} %{NOTSPACE:http_ver} status\: %{NUMBER:response} len\: %{NUMBER:bytes} time\: %{NUMBER:seconds}&quot; }</span>
+<span class="x">            add_field =&gt; [&quot;api&quot;, &quot;metadata&quot;]</span>
+<span class="x">            add_tag =&gt; [&quot;apimetrics&quot;]</span>
+<span class="x">         }</span>
+<span class="x">       }</span>
+<span class="x">    }</span>
+<span class="x">  } else if &quot;libvirt&quot; in [tags] {</span>
+<span class="x">    grok {</span>
+<span class="x">       match =&gt; { &quot;message&quot; =&gt; &quot;(?m)^%{TIMESTAMP_ISO8601:logdate}:%{SPACE}%{NUMBER:code}:?%{SPACE}\[?\b%{NOTSPACE:loglevel}\b\]?%{SPACE}?:?%{SPACE}\[?\b%{NOTSPACE:module}\b\]?%{SPACE}?%{GREEDYDATA:logmessage}?&quot; }</span>
+<span class="x">       add_field =&gt; { &quot;received_at&quot; =&gt; &quot;%{@timestamp}&quot;}</span>
+<span class="x">    }</span>
+<span class="x">    mutate {</span>
+<span class="x">       uppercase =&gt; [ &quot;loglevel&quot; ]</span>
+<span class="x">    }</span>
+<span class="x">  } else if [type] == &quot;syslog&quot; {</span>
+<span class="x">     grok {</span>
+<span class="x">        match =&gt; { &quot;message&quot; =&gt; &quot;%{SYSLOGTIMESTAMP:syslog_timestamp} %{SYSLOGHOST:syslog_hostname} %{DATA:syslog_program}(?:\[%{POSINT:syslog_pid}\])?: %{GREEDYDATA:logmessage}&quot; }</span>
+<span class="x">        add_field =&gt; [ &quot;received_at&quot;, &quot;%{@timestamp}&quot; ]</span>
+<span class="x">     }</span>
+<span class="x">     syslog_pri {</span>
+<span class="x">        severity_labels =&gt; [&quot;ERROR&quot;, &quot;ERROR&quot;, &quot;ERROR&quot;, &quot;ERROR&quot;, &quot;WARNING&quot;, &quot;INFO&quot;, &quot;INFO&quot;, &quot;DEBUG&quot; ]</span>
+<span class="x">     }</span>
+<span class="x">     date {</span>
+<span class="x">        match =&gt; [ &quot;syslog_timestamp&quot;, &quot;MMM  d HH:mm:ss&quot;, &quot;MMM dd HH:mm:ss&quot; ]</span>
+<span class="x">     }</span>
+<span class="x">     if !(&quot;_grokparsefailure&quot; in [tags]) {</span>
+<span class="x">        mutate {</span>
+<span class="x">           replace =&gt; [ &quot;@source_host&quot;, &quot;%{syslog_hostname}&quot; ]</span>
+<span class="x">        }</span>
+<span class="x">     }</span>
+<span class="x">     mutate {</span>
+<span class="x">        remove_field =&gt; [ &quot;syslog_hostname&quot;, &quot;syslog_timestamp&quot; ]</span>
+<span class="x">        add_field =&gt; [ &quot;loglevel&quot;, &quot;%{syslog_severity}&quot; ]</span>
+<span class="x">        add_field =&gt; [ &quot;module&quot;, &quot;%{syslog_program}&quot; ]</span>
+<span class="x">     }</span>
+<span class="x">  }</span>
+<span class="x">}</span>
+
+<span class="x">#output {</span>
+<span class="x">#  #also include an output to your elastic search...</span>
+<span class="x">#  #output to statsd running on local server which will output to graphite or whatever timeseries database you are using.</span>
+<span class="x">#  statsd {</span>
+<span class="x">#    tags=&gt; [apimetrics]</span>
+<span class="x">#    host =&gt; &quot;localhost&quot;</span>
+<span class="x">#    port =&gt; &quot;8125&quot;</span>
+<span class="x">#    namespace =&gt; &quot;logstash&quot;</span>
+<span class="x">#    increment =&gt; [&quot;%{api}.api.%{method}.%{response}&quot;, &quot;%{api}.api.%{method}.total&quot;, &quot;%{api}.api.%{response}.total&quot;, &quot;%{api}.api.total&quot;]</span>
+<span class="x">#    timing =&gt; [&quot;%{api}.api.%{method}.%{response}&quot;, &quot;%{seconds}&quot; ]</span>
+<span class="x">#    timing =&gt; [&quot;%{api}.api.%{response}&quot;, &quot;%{seconds}&quot;]</span>
+<span class="x"># }</span>
+<span class="x">#}</span>
+<span class="x">#output {</span>
+<span class="x">#  elasticsearch { hosts =&gt; [&quot;localhost:9200&quot;] }</span>
+<span class="x">#  stdout { codec =&gt; rubydebug }</span>
+<span class="x">  #redis {</span>
+<span class="x">  #  host =&gt; &quot;192.168.0.20&quot;</span>
+<span class="x">  #  data_type =&gt; &quot;list&quot;</span>
+<span class="x">  #  key =&gt; &quot;logstash&quot;</span>
+<span class="x">  #  codec =&gt; json</span>
+<span class="x">  #}</span>
+<span class="x">#}</span>
+<span class="x">output {</span>
+<span class="x">  elasticsearch {</span>
+<span class="x">    hosts =&gt; [&quot;localhost:9200&quot;]</span>
+<span class="x">    #sniffing =&gt; true</span>
+<span class="x">    #manage_template =&gt; false</span>
+<span class="x">    #index =&gt; &quot;logstash-*&quot;</span>
+<span class="x">    #document_type =&gt; &quot;%{[@metadata][type]}&quot;</span>
+<span class="x">  }</span>
+<span class="x">  stdout { codec =&gt; rubydebug }</span>
+<span class="x">}</span>
+</pre></div>
+
+
+<p>This filter will grab the files provided in the input, parse it and send it to the output. In my case I am sending it to elasticsearch. </p>
+<h1>Grok filters</h1>
+<p>You might have noticed that we have used grok filters to parse the Openstack files. 
+Grok is currently the best way in logstash to parse crappy unstructured log data into something structured and queryable.</p>
+<p>This tool is perfect for syslog logs, apache and other webserver logs, mysql logs, and in general, any log format that is generally written for humans and not computer consumption.</p>
+<p>Logstash ships with about 120 patterns by default. You can find them here: https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns. You can add your own trivially. (See the patterns_dir setting)</p>
+<p>If you need help building patterns to match your logs, you will find the http://grokdebug.herokuapp.com and http://grokconstructor.appspot.com/ applications quite useful!</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="http://bingoarunprasath.github.io/tag/openstack.html">Openstack</a>
+      <a href="http://bingoarunprasath.github.io/tag/architecture.html">Architecture</a>
+      <a href="http://bingoarunprasath.github.io/tag/log.html">Log</a>
+      <a href="http://bingoarunprasath.github.io/tag/log-analysis.html">Log-analysis</a>
+    </p>
+  </div>
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'bingoarunprasath';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; Arun prasath 2016</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-78404732-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Arun's blog ",
+  "url" : "http://bingoarunprasath.github.io",
+  "image": "https://avatars2.githubusercontent.com/u/5082801?v=3&s=460",
+  "description": ""
+}
+</script>
+</body>
+</html>

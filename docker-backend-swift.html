@@ -1,0 +1,265 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="http://bingoarunprasath.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+    <link href="http://bingoarunprasath.github.io/static/custom.css" rel="stylesheet">
+
+
+
+    <link rel="shortcut icon" href="images/penguin.png" type="image/x-icon">
+    <link rel="icon" href="images/penguin.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="index, follow" />
+
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#333333">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#333333">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="author" content="Arun prasath" />
+<meta name="description" content="Demo on how to use Openstack swift as storage backend for Docker registry" />
+<meta name="keywords" content="Openstack, Architecture, Docker">
+<meta property="og:site_name" content="Arun's blog"/>
+<meta property="og:title" content="Using Openstack Swift as a storage backend for Docker registry"/>
+<meta property="og:description" content="Demo on how to use Openstack swift as storage backend for Docker registry"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="http://bingoarunprasath.github.io/docker-backend-swift.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-06-03 06:30:00+05:30"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="http://bingoarunprasath.github.io/author/arun-prasath.html">
+<meta property="article:section" content="Openstack"/>
+<meta property="article:tag" content="Openstack"/>
+<meta property="article:tag" content="Architecture"/>
+<meta property="article:tag" content="Docker"/>
+<meta property="og:image" content="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460">
+
+  <title>Arun's blog &ndash; Using Openstack Swift as a storage backend for Docker registry</title>
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="http://bingoarunprasath.github.io">
+        <img src="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460" alt="Arun prasath" title="Arun prasath">
+      </a>
+      <h1><a href="http://bingoarunprasath.github.io">Arun prasath</a></h1>
+
+<p>Cloud engineer in Wanclouds Inc @ Cisco</p>
+      <nav>
+        <ul class="list">
+          <li><a href="http://bingoarunprasath.github.io/pages/my-super-post.html#my-super-post">About me</a></li>
+
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-linkedin" href="http://www.linkedin.com/in/bingoarunprasath" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        <li><a class="sc-github" href="https://github.com/bingoarunprasath" target="_blank"><i class="fa fa-github"></i></a></li>
+        <li><a class="sc-facebook" href="https://www.facebook.com/bingoarunprasath" target="_blank"><i class="fa fa-facebook"></i></a></li>
+        <li><a class="sc-envelope-o" href="test" target="_blank"><i class="fa fa-envelope-o"></i></a></li>
+      </ul>
+    </div>
+  </aside>
+  <main>
+    <nav>
+      <a href="http://bingoarunprasath.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article>
+  <header>
+    <h1 id="docker-backend-swift">Using Openstack Swift as a storage backend for Docker registry</h1>
+    <p>
+          Posted on Fri 03 June 2016 in <a href="http://bingoarunprasath.github.io/category/openstack.html">Openstack</a>
+
+
+    </p>
+  </header>
+  <div>
+    <p>The following are some of the supporting storage backends for Docker registry.</p>
+<p>inmemory: A temporary storage driver using a local inmemory map. This exists solely for reference and testing.
+filesystem: A local storage driver configured to use a directory tree in the local filesystem.
+s3: A driver storing objects in an Amazon Simple Storage Solution (S3) bucket.
+azure: A driver storing objects in Microsoft Azure Blob Storage.
+swift: A driver storing objects in Openstack Swift.
+oss: A driver storing objects in Aliyun OSS.
+gcs: A driver storing objects in a Google Cloud Storage bucket.</p>
+<div class="highlight"><pre><span></span>test test
+# cat config.yaml
+version: 0.1
+log:
+  fields:
+    service: registry
+storage:
+  cache:
+    blobdescriptor: inmemory
+  swift: 
+    username: &lt;username&gt;    
+    password: &lt;password&gt; 
+    authurl: https://mycloud.openstack.com:5000/v2.0 
+    tenant: &lt;tenantname&gt; 
+    tenantid: &lt;tenantID&gt; 
+    insecureskipverify: true 
+    container: my_docker_registry 
+    rootdirectory: /swift/object/name/prefix 
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
+</pre></div>
+
+
+<h1>Setting up swift as a storage backend</h1>
+<p>Create a file config.yaml</p>
+<div class="highlight"><pre><span></span># cat config.yaml
+version: 0.1
+log:
+  fields:
+    service: registry
+storage:
+  cache:
+    blobdescriptor: inmemory
+  swift: 
+    username: &lt;username&gt;    
+    password: &lt;password&gt; 
+    authurl: https://mycloud.openstack.com:5000/v2.0 
+    tenant: &lt;tenantname&gt; 
+    tenantid: &lt;tenantID&gt; 
+    insecureskipverify: true 
+    container: my_docker_registry 
+    rootdirectory: /swift/object/name/prefix 
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
+</pre></div>
+
+
+<p>Enter Openstack auth information under ‘swift’ field.
+Launch a docker-registry container</p>
+<div class="highlight"><pre><span></span># docker run -d -p 5000:5000 --restart=always --name registry -v `pwd`/config.yml:/etc/docker/registry/config.yml registry:2
+</pre></div>
+
+
+<p>Download a image for testing and set the tag as localhost:5000</p>
+<div class="highlight"><pre><span></span># docker pull busybox &amp;&amp; docker tag busybox localhost:5000/busybox
+Using default tag: latest
+Trying to pull repository docker.io/library/busybox ... latest: Pulling from library/busybox
+9a163e0b8d13: Already exists 
+fef924a0204a: Already exists 
+Digest: sha256:97473e34e311e6c1b3f61f2a721d038d1e5eef17d98d1353a513007cf46ca6bd
+Status: Image is up to date for docker.io/busybox:latest
+</pre></div>
+
+
+<p>Push the image</p>
+<div class="highlight"><pre><span></span># docker push localhost:5000/busybox
+The push refers to a repository [localhost:5001/busybox] (len: 1)
+fef924a0204a: Pushed 
+9a163e0b8d13: Pushed 
+latest: digest: sha256:241bf973af8196d58b3c439835fd37d5c773a42d496ffa00d8148893ba2de1dc size: 3202
+</pre></div>
+
+
+<p>You can now see that the image is now pushed into Swift container</p>
+<div class="highlight"><pre><span></span># swift list my_docker_registry
+files/docker/registry/v2/blobs/sha256/16/16a7ebd378002f1261dfb5e21cc22d9473aaac7e06a1cd4ff4e26cfd75432e8f/data
+files/docker/registry/v2/blobs/sha256/5f/5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef/data
+files/docker/registry/v2/blobs/sha256/89/898337b1808cb8c9578cfcc571daa4a9943e6300c3eefc1ab495365ccae4f9af/data
+files/docker/registry/v2/repositories/busybox/_layers/sha256/16a7ebd378002f1261dfb5e21cc22d9473aaac7e06a1cd4ff4e26cfd75432e8f/link
+files/docker/registry/v2/repositories/busybox/_layers/sha256/5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef/link
+files/docker/registry/v2/repositories/busybox/_manifests/revisions/sha256/241bf973af8196d58b3c439835fd37d5c773a42d496ffa00d8148893ba2de1dc/link
+files/docker/registry/v2/repositories/busybox/_manifests/revisions/sha256/241bf973af8196d58b3c439835fd37d5c773a42d496ffa00d8148893ba2de1dc/signatures/sha256/898337b1808cb8c9578cfcc571daa4a9943e6300c3eefc1ab495365ccae4f9af/link
+files/docker/registry/v2/repositories/busybox/_manifests/tags/latest/current/link
+files/docker/registry/v2/repositories/busybox/_manifests/tags/latest/index/sha256/241bf973af8196d58b3c439835fd37d5c773a42d496ffa00d8148893ba2de1dc/link
+segments/2f6/46f636b65722f72656769737472792f76322f7265706f7369746f726965732f62757379626f782f5f75706c6f6164732f33333535633665662d393132372d346137642d613666622d6139316162343634376538322f646174610e3541c038ea9fc7bc970b6f183975425b0b07f470d1ea5918295cd612559b9fda39a3ee5e6b4b0d3255bfef95601890afd80709/0000000000000001
+segments/2f6/46f636b65722f72656769737472792f76322f7265706f7369746f726965732f62757379626f782f5f75706c6f6164732f34623663356532612d643662352d343035312d623035342d3564623834323234313731362f64617461b83e74b4d96e60a446b0c884ea31b9f278a58a094544c6473cec4e8e83351ca7da39a3ee5e6b4b0d3255bfef95601890afd80709/0000000000000001
+</pre></div>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="http://bingoarunprasath.github.io/tag/openstack.html">Openstack</a>
+      <a href="http://bingoarunprasath.github.io/tag/architecture.html">Architecture</a>
+      <a href="http://bingoarunprasath.github.io/tag/docker.html">Docker</a>
+    </p>
+  </div>
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'bingoarunprasath';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; Arun prasath 2016</p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-78404732-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " Arun's blog ",
+  "url" : "http://bingoarunprasath.github.io",
+  "image": "https://avatars2.githubusercontent.com/u/5082801?v=3&s=460",
+  "description": ""
+}
+</script>
+</body>
+</html>
