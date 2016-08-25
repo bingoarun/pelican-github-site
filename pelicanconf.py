@@ -62,7 +62,7 @@ STATIC_PATHS = ['images','static']
 
 #===theme settings===========================
 
-FAVICON = 'images/favicon.jpg'
+FAVICON = 'images/penguin.png'
 
 ROBOTS = 'index, follow'
 
