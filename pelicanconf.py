@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 
 AUTHOR = u'Arun prasath'
 SITENAME = u'Arun\'s blog'
-SITEURL = ''
-#SITEURL = 'http://bingoarunprasath.github.io'
+#SITEURL = ''
+SITEURL = 'http://bingoarun.github.io'
 SITETITLE="Arun prasath"
 SITESUBTITLE="Cloud engineer in Wanclouds Inc @ Cisco"
 SITELOGO="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460"
@@ -51,7 +51,7 @@ DEFAULT_PAGINATION = 10
 THEME= 'Flex'
 
 SOCIAL = (('linkedin', 'http://www.linkedin.com/in/bingoarunprasath'),
-          ('github', 'https://github.com/bingoarunprasath'),
+          ('github', 'https://github.com/bingoarun'),
           ('facebook','https://www.facebook.com/bingoarunprasath'),
           ('envelope-o','test'),
           )
@@ -91,7 +91,7 @@ COPYRIGHT_YEAR = 2016
 # work
 #WORK_DESCRIPTION = ''
 # items to descripe a work, "type", "cover-image link", "title", "descption", "link"
-#WORK_LIST = (('link', 'https://dl.dropboxusercontent.com/u/299446/BT3-Flat.png', 'Ansible-ELK', 'Ansible role for deploying ELK', 'https://github.com/bingoarunprasath/elk'),)
+#WORK_LIST = (('link', 'https://dl.dropboxusercontent.com/u/299446/BT3-Flat.png', 'Ansible-ELK', 'Ansible role for deploying ELK', 'https://github.com/bingoarun/elk'),)
 
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True

@@ -75,7 +75,7 @@ Some examples are
 
 ELK installation – 
 
-http://galaxy.ansible.com/bingoarunprasath/elk/
+http://galaxy.ansible.com/bingoarun/elk/
 https://www.elastic.co/downloads
 
 Example 1 –  logtstash.conf

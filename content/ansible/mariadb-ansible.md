@@ -16,7 +16,7 @@ Here I am using 5 Ubuntu 14.04 VMs in an Openstack environment.
 #Deploying MariaDB
 From the build server clone the repository.
 ```
-# git clone https://github.com/bingoarunprasath/ansible-mariadb-galera-web.git
+# git clone https://github.com/bingoarun/ansible-mariadb-galera-web.git
 # cd ansible-mariadb-galera-web
 ```
 Edit the inventory to include the server details and set the password.

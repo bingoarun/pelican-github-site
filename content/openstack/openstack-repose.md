@@ -135,7 +135,7 @@ https://raw.githubusercontent.com/rackerlabs/repose/master/repose-aggregator/ins
 
 or you can simply clone all the files from
 ```
-$ git clone https://github.com/bingoarunprasath/glance-docker-test-repose.git
+$ git clone https://github.com/bingoarun/glance-docker-test-repose.git
 ```
 
 ```
