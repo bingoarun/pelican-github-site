@@ -9,28 +9,28 @@ Summary: Some quick notes on setting up ELK for Openstack log analysis
 
 This write up explains the basics of ELK and how can we leverage it to analyze Openstack logs.
 
-#Short intro to ELK
+# Short intro to ELK
 
 ![alt text](images/elk/elk.png "ELK architecture diagram")
-  
-The above is a simple generic architecture of ELK. It has the following components. 
+
+The above is a simple generic architecture of ELK. It has the following components.
 
   1)	Shipper – Shipper (Logstash forwarder) is a component which collects the logs and send it to the ELK server. Shipper runs on all the servers where we need to collect logs.
 
-  2)	Logstash – Logstash collects the logs, parse it and index it. Logstash conf files usually comprises of input, output and filters. 
+  2)	Logstash – Logstash collects the logs, parse it and index it. Logstash conf files usually comprises of input, output and filters.
 
-  3)	Elasticsearch – Elasticsearch is the search engine of the logs. It is where the logs are actually stored and optimized for quick retrieval. 
+  3)	Elasticsearch – Elasticsearch is the search engine of the logs. It is where the logs are actually stored and optimized for quick retrieval.
 
   4)	Kibana – It is a dashboard to visualize the elasticsearch data
 
-  5)	Broker – Broker is another component which sits in between the logstash forwarder and the logstash indexer. Since logstash in ELK server might not be able to handle a bulk load of logs, all the logs from shipper can be sent to a broker (typically redis) and that it turn will send the logs to Logstash. 
+  5)	Broker – Broker is another component which sits in between the logstash forwarder and the logstash indexer. Since logstash in ELK server might not be able to handle a bulk load of logs, all the logs from shipper can be sent to a broker (typically redis) and that it turn will send the logs to Logstash.
 
-The above is one simple architecture. But in general, we can use different tools and architecture. For example there are different tools for shipping logs like filebeat, logstash-forwarder (deprecated) and even logstash can be used as shipper. In that case where logstash is used as shipper, we can process the logs and parse it in the client side itself. This can take the load of the ELK server and allows you to drop less useful logs in the client side. 
+The above is one simple architecture. But in general, we can use different tools and architecture. For example there are different tools for shipping logs like filebeat, logstash-forwarder (deprecated) and even logstash can be used as shipper. In that case where logstash is used as shipper, we can process the logs and parse it in the client side itself. This can take the load of the ELK server and allows you to drop less useful logs in the client side.
 
 #Logstash
 As I said earlier logstash conf files which are present in /etc/logstash/conf.d can contain 3 parts – input, output, filter.
 
-##Input 
+##Input
 Input plugin enables a specific source of events to be read by Logstash.
 
 Some examples of input
@@ -40,8 +40,8 @@ Some examples of input
  - Stdin
  - Eventlog
 
-##Filter 
-A filter plugin performs intermediary processing on an event. Filters are often applied conditionally depending on the characteristics of the event. 
+##Filter
+A filter plugin performs intermediary processing on an event. Filters are often applied conditionally depending on the characteristics of the event.
 
 Some examples are
 
@@ -50,7 +50,7 @@ Some examples are
   - Grok
   - Json
 
-##Output 
+##Output
 An output plugin sends event data to a particular destination.
 
 Some examples are
@@ -73,7 +73,7 @@ Some examples are
   - Plain 	  - Reads plaintext with no delimiting between events
   - rubydebug  - Applies the Ruby Awesome Print library to Logstash events
 
-ELK installation – 
+ELK installation –
 
 http://galaxy.ansible.com/bingoarun/elk/
 https://www.elastic.co/downloads
@@ -91,10 +91,10 @@ stdout { codec => rubydebug }
 }
 ```
 
-The above example will just get any input in stdin and print it as a processed output. 
+The above example will just get any input in stdin and print it as a processed output.
 You can run the logstash server using the following command
 bin/logstash -f logstash-filter.conf
-It will now wait for stdin. Now just past a line from any log file. 
+It will now wait for stdin. Now just past a line from any log file.
 ```
 {
         "message" => "127.0.0.1 - - [11/Dec/2013:00:01:45 -0800] \"GET /xampp/status.php HTTP/1.1\" 200 3891 \"http://cadenza/xampp/navi.php\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0\"",
@@ -475,10 +475,10 @@ output {
 ```
 
 
-This filter will grab the files provided in the input, parse it and send it to the output. In my case I am sending it to elasticsearch. 
+This filter will grab the files provided in the input, parse it and send it to the output. In my case I am sending it to elasticsearch.
 
 #Grok filters
-You might have noticed that we have used grok filters to parse the Openstack files. 
+You might have noticed that we have used grok filters to parse the Openstack files.
 Grok is currently the best way in logstash to parse crappy unstructured log data into something structured and queryable.
 
 This tool is perfect for syslog logs, apache and other webserver logs, mysql logs, and in general, any log format that is generally written for humans and not computer consumption.
@@ -486,4 +486,3 @@ This tool is perfect for syslog logs, apache and other webserver logs, mysql log
 Logstash ships with about 120 patterns by default. You can find them here: https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns. You can add your own trivially. (See the patterns_dir setting)
 
 If you need help building patterns to match your logs, you will find the http://grokdebug.herokuapp.com and http://grokconstructor.appspot.com/ applications quite useful!
-
