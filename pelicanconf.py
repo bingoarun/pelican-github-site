@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 
 AUTHOR = u'Arun prasath'
 SITENAME = u'Arun\'s blog'
-#SITEURL = ''
-SITEURL = 'http://bingoarun.github.io'
+SITEURL = ''
+#SITEURL = 'http://bingoarun.github.io'
 SITETITLE="Arun prasath"
 SITESUBTITLE="Sr.Operations Engineer @ Directi (EIG)"
 SITELOGO="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460"
