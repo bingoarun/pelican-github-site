@@ -7,7 +7,7 @@ SITENAME = u'Arun\'s blog'
 #SITEURL = ''
 SITEURL = 'http://bingoarun.github.io'
 SITETITLE="Arun prasath"
-SITESUBTITLE="Cloud engineer in Wanclouds Inc @ Cisco"
+SITESUBTITLE="Sr.Operations Engineer @ Directi (EIG)"
 SITELOGO="https://avatars2.githubusercontent.com/u/5082801?v=3&s=460"
 PATH = 'content'
 
@@ -53,7 +53,7 @@ THEME= 'Flex'
 SOCIAL = (('linkedin', 'http://www.linkedin.com/in/bingoarunprasath'),
           ('github', 'https://github.com/bingoarun'),
           ('facebook','https://www.facebook.com/bingoarunprasath'),
-          ('envelope-o','test'),
+          ('envelope-o','mailto:arunprasath33@gmail.com?Subject=Hello%20again'),
           )
 STATIC_PATHS = ['images','static']
 #SITE_THUMBNAIL = 'https://dl.dropboxusercontent.com/u/299446/logo.png'
@@ -62,7 +62,7 @@ STATIC_PATHS = ['images','static']
 
 #===theme settings===========================
 
-FAVICON = 'images/penguin.png'
+FAVICON = '../images/penguin.png'
 
 ROBOTS = 'index, follow'
 
@@ -83,9 +83,9 @@ COPYRIGHT_YEAR = 2016
 
 # About ME
 #PERSONAL_PHOTO = "https://scontent.fblr1-1.fna.fbcdn.net/v/t1.0-9/12208620_10205523530628665_1268258118122647299_n.jpg?oh=dfdc4abdc74abbdee204f2cb0e124fcf&oe=57D20623"
-#PERSONAL_INFO = """I am Openstack cloud engineer in Wanclouds, currently deployed in Cisco Inc for Openstack operations. After gaining good experience in HP cloud technologies while working with Visolve Inc, I am now focused on Opensource Cloud tools and frameworks. 
+#PERSONAL_INFO = """I am Openstack cloud engineer in Wanclouds, currently deployed in Cisco Inc for Openstack operations. After gaining good experience in HP cloud technologies while working with Visolve Inc, I am now focused on Opensource Cloud tools and frameworks.
 
-#I not only love learning new technologies, but also apply them practically to solve real world problems. I am also a good Python programmer and interested in automating stuffs. 
+#I not only love learning new technologies, but also apply them practically to solve real world problems. I am also a good Python programmer and interested in automating stuffs.
 #My technology stack includes but not limited to Openstack, Python, Puppet, Ansible and Docker."""
 
 # work

@@ -41,3 +41,7 @@ a.btn:hover {
     background-color: #008ae6;
     color: white;
 }
+
+nav{
+  text-transform: none !important;
+}
